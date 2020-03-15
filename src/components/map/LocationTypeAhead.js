@@ -107,7 +107,7 @@ export default class LocationTypeAhead extends Component {
         });
     }
     handleSelectLocation() {
-        this.props.onLocationSelect(this.state.selectedLocadtion);
+        this.props.onLocationSelect(this.state.selectedLocation);
     }
     render() {
         return [
