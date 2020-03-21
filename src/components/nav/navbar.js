@@ -1,10 +1,31 @@
-import React from 'react';
+import React from "react";
+import PropTypes from "prop-types";
 
-import Logo from './logo';
+import Link from "../router/Link";
+import Logo from "./logo";
+import { logUserOut } from "../../backend/auth";
 
-export const Navigation = () => (
+export const Navigation = ({ user }) => (
     <nav className="navbar">
         <Logo />
+        {user.authenticated ? (
+            <span className="user-nav-widget">
+                <span>{user.name}</span>
+                <img
+                    width={40}
+                    className="img-circle"
+                    src={user.profilePicture}
+                    alt={user.name}
+                />
+                <span onClick={() => logUserOut()}>
+                    <i className="fa fa-sign-out" />
+                </span>
+            </span>
+        ) : (
+            <Link to="/login">
+                <button type="button">Log in or sign up</button>
+            </Link>
+        )}
     </nav>
 );
 

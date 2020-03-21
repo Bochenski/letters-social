@@ -1,18 +1,20 @@
-import { firebase } from './core';
+import { firebase } from "./core";
 
-const github = new firebase.auth.GithubAuthProvider();
-github.addScope('user:email');
+const google = new firebase.auth.GoogleAuthProvider();
+google.addScope("https://www.googleapis.com/auth/userinfo.email");
 
 export function logUserOut() {
     return firebase.auth().signOut();
 }
 
-export function loginWithGithub() {
-    return firebase.auth().signInWithPopup(github);
+export function loginWithGoogle() {
+    return firebase.auth().signInWithPopup(google);
 }
 
 export function getFirebaseUser() {
-    return new Promise(resolve => firebase.auth().onAuthStateChanged(user => resolve(user)));
+    return new Promise(resolve =>
+        firebase.auth().onAuthStateChanged(user => resolve(user))
+    );
 }
 
 export function getFirebaseToken() {

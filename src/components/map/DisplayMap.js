@@ -114,7 +114,7 @@ export default class DisplayMap extends Component {
                     key="location-description"
                     className="location-description"
                 >
-                    <i classNme="location-icon fa fa-location-arrow" />
+                    <i className="location-icon fa fa-location-arrow" />
                     <span className="location-name">
                         {this.state.location.name}
                     </span>
