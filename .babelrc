@@ -4,6 +4,10 @@
             "presets": ["react-app", "env"],
             "plugins": ["transform-class-properties"]
         },
+        "test": {
+            "presets": ["react-app", "env"],
+            "plugins": ["transform-class-properties"]
+        },
         "production": {
             "presets": [
                 "react-app",
