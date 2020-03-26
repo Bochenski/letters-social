@@ -12,6 +12,11 @@ import Router from "./components/router/Router";
 import Route from "./components/router/Route";
 import { history } from "./history";
 
+import configureStore from "./store/configureStore";
+// import initialReduxState from "./constants/initialState";
+
+import "./store/exampleUse";
+
 import "./shared/crash";
 import "./shared/service-worker";
 import "./shared/vendor";
