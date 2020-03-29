@@ -1,6 +1,7 @@
 import * as types from "../constants/types";
 import { history } from "../history";
 import { createError } from "./error";
+import * as API from "../shared/http";
 import { loading, loaded } from "./loading";
 import {
     getFirebaseUser,

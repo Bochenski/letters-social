@@ -26,7 +26,8 @@ export function like(postId) {
             .then(res => res.json())
             .then(post => {
                 dispatch({
-                    type: types.posts.LIKE
+                    type: types.posts.LIKE,
+                    post
                 });
             });
     };
@@ -63,7 +64,7 @@ export function createNewPost(post) {
     };
 }
 
-export function getPostsForPate(page = "first") {
+export function getPostsForPage(page = "first") {
     return (dispatch, getState) => {
         const { pagination } = getState();
         const endPoint = pagination[page];

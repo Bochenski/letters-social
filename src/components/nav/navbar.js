@@ -1,13 +1,13 @@
 import React from "react";
-import PropTypes from "prop-types";
+import { connect } from "react-redux";
 
 import Link from "../router/Link";
 import Logo from "./logo";
-import { logUserOut } from "../../backend/auth";
+import { logout } from "../../actions/auth";
 
-export const Navigation = ({ user }) => (
+export const Navigation = ({ user, handleLogout }) => (
     <nav className="navbar">
-        <Logo />
+        <Logo logoOnly={false} />
         {user.authenticated ? (
             <span className="user-nav-widget">
                 <span>{user.name}</span>
@@ -17,7 +17,7 @@ export const Navigation = ({ user }) => (
                     src={user.profilePicture}
                     alt={user.name}
                 />
-                <span onClick={() => logUserOut()}>
+                <span onClick={handleLogout}>
                     <i className="fa fa-sign-out" />
                 </span>
             </span>
@@ -29,4 +29,13 @@ export const Navigation = ({ user }) => (
     </nav>
 );
 
-export default Navigation;
+export const mapStateToProps = state => ({ user: state.user });
+export const mapDispatchToProps = dispatch => ({
+    handleLogout() {
+        dispatch(logout());
+    }
+});
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(Navigation);

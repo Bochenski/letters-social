@@ -1,5 +1,6 @@
 import React from "react";
 import { render } from "react-dom";
+import { Provider } from "react-redux";
 import firebase from "firebase";
 
 import * as API from "./shared/http";
@@ -13,95 +14,79 @@ import Route from "./components/router/Route";
 import { history } from "./history";
 
 import configureStore from "./store/configureStore";
-// import initialReduxState from "./constants/initialState";
-
-import "./store/exampleUse";
+import initialReduxState from "./constants/initialState";
 
 import "./shared/crash";
 import "./shared/service-worker";
 import "./shared/vendor";
 // NOTE: this isn't ES*-compliant/possible, but works because we use Webpack as a build tool
 import "./styles/styles.scss";
-import { getFirebaseToken } from "./backend/auth";
+
+import { createError } from "./actions/error";
+import { loginSuccess } from "./actions/auth";
+import { loaded, loading } from "./actions/loading";
+
+import { getFirebaseToken, getFirebaseUser } from "./backend/auth";
+
+const store = configureStore(initialReduxState);
 
 export const renderApp = (state, callback = () => {}) => {
     render(
-        <Router {...state}>
-            <Route path="" component={App}>
-                <Route path="/" component={Home} />
-                <Route path="/posts/:postId" component={SinglePost} />
-                <Route path="/login" component={Login} />
-                <Route path="*" component={NotFound} />
-            </Route>
-        </Router>,
+        <Provider store={store}>
+            <Router {...state}>
+                <Route path="" component={App}>
+                    <Route path="/" component={Home} />
+                    <Route path="/posts/:postId" component={SinglePost} />
+                    <Route path="/login" component={Login} />
+                    <Route path="*" component={NotFound} />
+                </Route>
+            </Router>
+        </Provider>,
         document.getElementById("app"),
         callback
     );
 };
 
-let state = {
-    location: window.location.pathname,
-    user: {
-        authenticated: false,
-        profilePicture: null,
-        id: null,
-        name: null,
-        token: null
-    }
+const initialState = {
+    location: window.location.pathname
 };
 
-renderApp(state);
+renderApp(initialState);
 
 history.listen(location => {
     const user = firebase.auth().currentUser;
-    state = Object.assign({}, state, {
+    const newState = Object.assign({}, initialState, {
         location: user ? location.pathname : "/login"
     });
-    renderApp(state);
+    renderApp(newState);
 });
 
-history.listen(location => {
-    const user = firebase.auth().currentUser;
-    state = Object.assign({}, state, {
-        location: user ? location.pathname : "/login"
-    });
-    renderApp(state);
-});
-
-firebase.auth().onAuthStateChanged(async user => {
-    if (!user) {
-        state = {
-            location: state.locadtion,
-            user: {
-                authenticated: false
-            }
-        };
-        return renderApp(state, () => {
-            history.push("/login");
-        });
-    }
-    const token = await getFirebaseToken();
-    const res = await API.loadUser(user.uid);
-    let renderUser;
-    if (res.status === 404) {
-        const userPayload = {
-            name: user.displayName,
-            profilePicture: user.photoURL,
-            id: user.uid
-        };
-        renderUser = await API.createUser(userPayload).then(res => res.json());
-    } else {
-        renderUser = await res.json();
-    }
-    history.push("/");
-    state = Object.assign({}, state, {
-        user: {
-            name: renderUser.name,
-            id: renderUser.id,
-            profilePicture: renderUser.porfilePiocture,
-            authenticate: true
-        },
-        token
-    });
-    renderApp(state);
-});
+getFirebaseUser()
+    .then(async user => {
+        if (!user) {
+            return history.push("/login");
+        }
+        store.dispatch(loading());
+        const token = await getFirebaseToken();
+        const res = await API.loadUser(user.uid);
+        if (res.status == 404) {
+            const userPayload = {
+                name: user.displayName,
+                profilePicture: user.photoURL,
+                id: user.uid
+            };
+            const newUser = await API.createUser(userPayload).then(res =>
+                res.json()
+            );
+            store.dispatch(loginSuccess(newUser, token));
+            store.dispatch(loaded());
+            history.push("/");
+            return newUser;
+        }
+        const existingUser = await res.json();
+        store.dispatch(loginSuccess(existingUser, token));
+        store.dispatch(loaded());
+        history.push("/");
+        return existingUser;
+    })
+    .catch(err => createError(err));
