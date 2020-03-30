@@ -2,12 +2,16 @@ import Cookies from "js-cookie";
 import initialState from "../constants/initialState";
 import * as types from "../constants/types";
 import { useImperativeHandle } from "react";
+import { isServer } from "../utils/environment";
 
 export function user(state = initialState.user, action) {
     switch (action.type) {
         case types.auth.LOGIN_SUCCESS:
             const { user, token } = action;
-            Cookies.set("letters-token", token);
+            if (!isServer()) {
+                Cookies.set("letters-token", token);
+            }
+
             return Object.assign({}, state.user, {
                 authenticated: true,
                 name: user.name,
@@ -17,7 +21,9 @@ export function user(state = initialState.user, action) {
                 token
             });
         case types.auth.LOGOUT_SUCCESS:
-            Cookies.remove("letters-token");
+            if (!isServer()) {
+                Cookies.remove("letters-token");
+            }
             return initialState.user;
         default:
             return state;
